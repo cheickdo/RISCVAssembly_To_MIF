@@ -10,6 +10,7 @@ vector<string>Format;
 ll sizeI,size;
 int binary[32];
 ll pccount = 0;
+int mflag = 0;
 
 typedef struct 
 {
@@ -164,6 +165,7 @@ void read_data(string filename)
     string word;
     vector<datafile> stored;
     file.open(filename);
+	if (!file.is_open()) exit(1);
     int flag;
     int start = 0;
     if(file.is_open())
@@ -283,6 +285,7 @@ void formats()
 {
 	ifstream myFile;
 	myFile.open("Format.txt");
+	if (!myFile.is_open()) exit(1);
 	string line;
 	while(getline(myFile,line))
 	{
@@ -344,7 +347,10 @@ ll gethex(vector<int>temp)
 void hexa()
 {
 	ofstream file;
-	file.open("BINARY.mc",std::ios_base::app);
+	ofstream binaryfile;
+
+	file.open("inst_mem.mif",std::ios_base::app);
+	if (!file.is_open()) exit(1);
 	//file<<"0x";
 	string s;
 	ll num =1;
@@ -363,12 +369,20 @@ void hexa()
 	reverse(s.begin(),s.end());
 	file<<pccount/4<<"               : ";
 	//file<<"0x";
+
+	//Write to binary file aswell
+	if (mflag) {
+		binaryfile.open("BINARY.mc",std::ios_base::app);
+		if (!binaryfile.is_open()) exit(1);
+	}
+
 	for(int i=0;i<32;i++)
 	{
 		vector<int>t;
 		for(int j=0;j<4;j++)
 		{
 			file << binary[i];
+			if (mflag) binaryfile << binary[i];
 			t.push_back(binary[i++]);
 			//file<<binary[i++];
 		}
@@ -381,8 +395,11 @@ void hexa()
 	}
 	//cout << endl;
 	file<<"\n";
+	if (mflag) binaryfile << "\n";
 	pccount+=4;
+
 	file.close();
+	if (mflag) binaryfile.close();
 }
 
 
@@ -1413,27 +1430,69 @@ inline bool exists (const std::string& name) {
   return (stat (name.c_str(), &buffer) == 0); 
 }
 
+void generateMIF(string outFile) {
+
+}
+
 //Driver Code
 int main(int argc, char* argv[])
 {
+	//testing options
+	char *cvalue = NULL;
+	int index;
+	int c;
 
-	//check for file existance
-	if (!exists(argv[1])) return 1;
+	opterr = 0;
+
+	//parse argument
+	while ((c = getopt (argc, argv, "mf:")) != -1)
+		switch (c)
+		{
+		case 'm':
+			mflag = 1;
+			break;
+		case 'f':
+			cvalue = optarg;
+			break;
+		case '?':
+			if (optopt == 'f')
+			fprintf (stderr, "Option -%c requires an argument.\n", optopt);
+			else if (isprint (optopt))
+			fprintf (stderr, "Unknown option `-%c'.\n", optopt);
+			else
+			fprintf (stderr,
+					"Unknown option character `\\x%x'.\n",
+					optopt);
+			return 1;
+		default:
+			abort ();
+		}
 
 	for(int i=0;i<4000;i++)
 		datamemory[i] = "00";
-	read_data(argv[1]); 
+	read_data(cvalue); 
 	
 	ofstream files;
-	files.open("BINARY.mc");
+	ofstream binaryfile;
+
+	//Specifiers for mif file (Currently static at 32bitwidth and 65536 words)
+	files.open("inst_mem.mif");
+	if (!files.is_open()) return 1;
+
 	files << "WIDTH = 32;\nDEPTH = 65536;\nADDRESS_RADIX = HEX;\nDATA_RADIX = BIN;\n\nCONTENT\nBEGIN\n";
 	files.close();
+
+	if (mflag)
+		binaryfile.open("BINARY.mc");
+		if (!binaryfile.is_open()) return 1;
+		binaryfile.close();
+
 	formats();
 	ifstream myFile;
 
-	myFile.open(argv[1]);
-	//string start = "WIDTH = 32;\nDEPTH = 65536;\nADDRESS_RADIX = HEX;\nDATA_RADIX = BIN;\n\nCONTENT\nBEGIN\n";
-
+	myFile.open(cvalue);
+	if (!myFile.is_open()) return 1;
+	
 	string line;
 	int flag = 0;
 	int start = 0;
@@ -1455,7 +1514,8 @@ int main(int argc, char* argv[])
 	process();
 	myFile.close();
 	ofstream file;
-	file.open("BINARY.mc",std::ios_base::app);
+	file.open("inst_mem.mif",std::ios_base::app);
+	if (!file.is_open()) return 1;
 	file << "END;";
 	
 
@@ -1472,5 +1532,5 @@ int main(int argc, char* argv[])
 	//file<<s<<endl;
 	file.close();
 
-
+	return 0;
 }
