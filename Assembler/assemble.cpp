@@ -1,4 +1,6 @@
 #include<bits/stdc++.h>
+#include <sys/stat.h>
+
 #define ll long long int
 #define START 268435456
 using namespace std;
@@ -156,12 +158,12 @@ string convert(string s,int len)
     }
 }
 
-void read_data()
+void read_data(string filename)
 {
     ifstream file;
     string word;
     vector<datafile> stored;
-    file.open("test.asm");
+    file.open(filename);
     int flag;
     int start = 0;
     if(file.is_open())
@@ -342,7 +344,7 @@ ll gethex(vector<int>temp)
 void hexa()
 {
 	ofstream file;
-	file.open("MCode.mc",std::ios_base::app);
+	file.open("BINARY.mc",std::ios_base::app);
 	//file<<"0x";
 	string s;
 	ll num =1;
@@ -359,7 +361,7 @@ void hexa()
 	}
 
 	reverse(s.begin(),s.end());
-	//file<<s<<" ";
+	file<<pccount/4<<"               : ";
 	//file<<"0x";
 	for(int i=0;i<32;i++)
 	{
@@ -380,6 +382,7 @@ void hexa()
 	//cout << endl;
 	file<<"\n";
 	pccount+=4;
+	file.close();
 }
 
 
@@ -1405,19 +1408,32 @@ void setlabel()
 	}
 }
 
+inline bool exists (const std::string& name) {
+  struct stat buffer;   
+  return (stat (name.c_str(), &buffer) == 0); 
+}
+
 //Driver Code
-int main()
+int main(int argc, char* argv[])
 {
+
+	//check for file existance
+	if (!exists(argv[1])) return 1;
+
 	for(int i=0;i<4000;i++)
 		datamemory[i] = "00";
-	read_data(); 
+	read_data(argv[1]); 
 	
 	ofstream files;
-	files.open("MCode.mc");
+	files.open("BINARY.mc");
+	files << "WIDTH = 32;\nDEPTH = 65536;\nADDRESS_RADIX = HEX;\nDATA_RADIX = BIN;\n\nCONTENT\nBEGIN\n";
 	files.close();
 	formats();
 	ifstream myFile;
-	myFile.open("test.asm");
+
+	myFile.open(argv[1]);
+	//string start = "WIDTH = 32;\nDEPTH = 65536;\nADDRESS_RADIX = HEX;\nDATA_RADIX = BIN;\n\nCONTENT\nBEGIN\n";
+
 	string line;
 	int flag = 0;
 	int start = 0;
@@ -1439,7 +1455,8 @@ int main()
 	process();
 	myFile.close();
 	ofstream file;
-	file.open("MCode.mc",std::ios_base::app);
+	file.open("BINARY.mc",std::ios_base::app);
+	file << "END;";
 	
 
 
@@ -1453,7 +1470,7 @@ int main()
 	//	}
 	//}
 	//file<<s<<endl;
-	//file.close();
+	file.close();
 
 
 }
