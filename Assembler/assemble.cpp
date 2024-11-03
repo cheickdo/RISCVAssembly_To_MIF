@@ -394,7 +394,7 @@ void hexa()
 		i--;
 	}
 	//cout << endl;
-	file<<"\n";
+	file<<";\n";
 	if (mflag) binaryfile << "\n";
 	pccount+=4;
 
