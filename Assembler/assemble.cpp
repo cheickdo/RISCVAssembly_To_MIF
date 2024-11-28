@@ -1039,6 +1039,16 @@ void SBFunction(int index,int index1)
 	hexa();
 }
 
+void SYSFunction(int index, int index1) {
+	for (size_t i = 0; i<32; ++i) {
+		binary[i] = 0;
+	}
+	int i = 6;
+	for(int j=25;j<=31;j++)
+		binary[j] = Format[index1][i++]-48;
+	hexa();
+}
+
 void typenumber(string ins,int index,int index1)
 {
 	if(ins=="I")
@@ -1053,6 +1063,8 @@ void typenumber(string ins,int index,int index1)
 		UFunction(index,index1);
 	if(ins=="SB")
 		SBFunction(index,index1);
+	if (ins=="SYS")
+		SYSFunction(index, index1);
 }
 
 //To extract instruction type and process them independently
@@ -1266,7 +1278,7 @@ void shift()
 			while(j<codeinit[i].size() && codeinit[i][j]==' ')
 			j++;
 			start = j;
-			while(codeinit[i][j]!=' ')
+			while((codeinit[i][j]!=' ') && (j < codeinit[i].size()))
 				ins += codeinit[i][j++];
 		}
 		if(ins == "la")
@@ -1443,8 +1455,8 @@ int main(int argc, char* argv[])
 	int c;
 
 	opterr = 0;
-
 	//parse argument
+	//TODO, allow for flags to be parsed together
 	while ((c = getopt (argc, argv, "mf:")) != -1)
 		switch (c)
 		{
@@ -1465,7 +1477,7 @@ int main(int argc, char* argv[])
 					optopt);
 			return 1;
 		default:
-			abort ();
+			return 1;
 		}
 
 	for(int i=0;i<4000;i++)
