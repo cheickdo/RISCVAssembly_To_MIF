@@ -415,8 +415,193 @@ int getlab(string label,int ind)
 			return dest;
 		}
 	}
+	return -1;
 }
 
+void FIFunction (int index, int index1) {
+	int size11 = code[index].size();
+	int size = code[index].size();
+	int size1 = Format[index1].size();
+	ll rd,rs1,imme;
+	int i=0;
+	i++;
+	while((code[index][i]!='x') || (code[index][i+1] == '.') || (code[index][i+1] == ' '))
+	{
+		i++;
+	}
+	
+	i++;
+	vector<int>temp;
+	while(code[index][i]!=' ' && code[index][i]!=',' )
+	{
+		temp.push_back(code[index][i]-48);
+		i++;
+	}
+	rd = getnum(temp,10);
+	temp.clear();
+	while(code[index][i]!='x')
+	{
+		i++;
+	}
+	i++;
+	while((code[index][i]!=' ') && (code[index][i]!=',') && (code[index][i]!='\0'))
+	{
+		temp.push_back(code[index][i]-48);
+		i++;
+	}
+	rs1 = getnum(temp,10);
+	temp.clear();
+	/*
+	while(code[index][i]==' ' || code[index][i]==',')
+	{
+		i++;
+	}
+	int flag1=0;
+	if(code[index][i]=='-')	{flag1=1; i++;}
+	int flag=0;
+	while(i<size && code[index][i]!=' ' && code[index][i]!='#' && code[index][i]!=',' )
+	{
+		temp.push_back(code[index][i]-48);
+		if(code[index][i]=='x')
+			flag=1;
+		i++;
+	}
+	if(flag==0)
+	imme = getnum(temp,10);
+	else
+	imme = gethex(temp);
+	if(flag1) imme = getinver(imme,12);
+	temp.clear();
+	*/
+	i = 0;
+	while(Format[index1][i]!=' ')
+	{
+		i++;
+	}
+	i++;
+
+	int j;
+	for(j=25;j<=31;j++)
+		binary[j] = Format[index1][i++]-48; //opcode
+	i++;
+	j=24;
+	for(int k=0;k<5;k++)
+	{
+		binary[j--] = rd%2; //rd
+		rd/=2;
+	}
+	for(j=17;j<=19;j++)
+	{
+		binary[j] = Format[index1][i++]-48; //funct3
+	}
+	i++;
+	j=16;
+	for(int k=0;k<5;k++)
+	{
+		binary[j--] = rs1%2; //rs1
+		rs1/=2;
+	}
+	for(int k=0;k<12;k++)
+	{
+		binary[k] = Format[index1][i++]-48;
+		//binary[j--] = imme%2;
+		//imme/=2;
+	}
+
+
+	hexa();
+	return;
+}
+
+void FCFunction (int index, int index1) {
+	int size11 = code[index].size();
+	int size = code[index].size();
+	int size1 = Format[index1].size();
+	ll rd,rs1,imme;
+	int i=0;
+	i++;
+	while((code[index][i]!='x') || (code[index][i+1] == '.') || (code[index][i+1] == ' '))
+	{
+		i++;
+	}
+	
+	i++;
+	vector<int>temp;
+	while(code[index][i]!=' ' && code[index][i]!=',' )
+	{
+		temp.push_back(code[index][i]-48);
+		i++;
+	}
+	rd = getnum(temp,10);
+	temp.clear();
+	while(code[index][i]!='x')
+	{
+		i++;
+	}
+	i++;
+	while((code[index][i]!=' ') && (code[index][i]!=',') && (code[index][i]!='\0'))
+	{
+		temp.push_back(code[index][i]-48);
+		i++;
+	}
+	rs1 = getnum(temp,10);
+	temp.clear();
+	/*
+	while(code[index][i]==' ' || code[index][i]==',')
+	{
+		i++;
+	}
+	int flag1=0;
+	if(code[index][i]=='-')	{flag1=1; i++;}
+	int flag=0;
+	while(i<size && code[index][i]!=' ' && code[index][i]!='#' && code[index][i]!=',' )
+	{
+		temp.push_back(code[index][i]-48);
+		if(code[index][i]=='x')
+			flag=1;
+		i++;
+	}
+	if(flag==0)
+	imme = getnum(temp,10);
+	else
+	imme = gethex(temp);
+	if(flag1) imme = getinver(imme,12);
+	temp.clear();
+	*/
+	i = 0;
+	while(Format[index1][i]!=' ')
+	{
+		i++;
+	}
+	i++;
+
+	int j;
+	for(j=25;j<=31;j++)
+		binary[j] = Format[index1][i++]-48; //opcode
+	i++;
+	j=24;
+	for(int k=0;k<5;k++)
+	{
+		binary[j--] = rd%2; //rd
+		rd/=2;
+	}
+	j=16;
+	for(int k=0;k<5;k++)
+	{
+		binary[j--] = rs1%2; //rs1
+		rs1/=2;
+	}
+	for(int k=0;k<12;k++)
+	{
+		binary[k] = Format[index1][i++]-48;
+		//binary[j--] = imme%2;
+		//imme/=2;
+	}
+
+
+	hexa();
+	return;
+}
 
 void IFunction(int index,int index1)
 {
@@ -1065,6 +1250,10 @@ void typenumber(string ins,int index,int index1)
 		SBFunction(index,index1);
 	if (ins=="SYS")
 		SYSFunction(index, index1);
+	if (ins=="FI")
+		FIFunction(index, index1);
+	if (ins=="FC")
+		FCFunction(index, index1);
 }
 
 //To extract instruction type and process them independently

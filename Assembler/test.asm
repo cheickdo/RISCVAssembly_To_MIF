@@ -1,3 +1,6 @@
-START: addi x2, x0, 3
-addi x3, x0, 2
-rem x4, x2, x3
+START: addi x2, x0, 1
+flw x2, 24(x0)
+sw x0, 24(x0)
+addi x2, x0, 4
+addi x2, x0, 71
+addi x2, x0, 71
