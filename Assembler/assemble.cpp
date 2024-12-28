@@ -2,7 +2,7 @@
 #include <sys/stat.h>
 
 #define ll long long int
-#define START 268435456
+#define START 0
 using namespace std;
 vector<string>codeinit;
 vector<string>code;
@@ -79,7 +79,7 @@ ll getinver(ll imme,int bit)
 
 vector<seg>datalabel;
 
-//To convert a number in string format to its Hexadecimal
+//To convert a number in string format to its Binary TODO
 string convert(string s,int len)
 {
     int length = s.size();
@@ -92,7 +92,7 @@ string convert(string s,int len)
             break;
         }
     }
-    if(flag)
+    if(flag) //If number is in decimal form
     {
         ll num = 0;
         ll mul = 1;
@@ -112,9 +112,9 @@ string convert(string s,int len)
         }
 
         string ans;
-        for(int i=0;i<len;i++)
+        for(int i=0;i<32;i++)
         {
-            ll rem = num%16;
+            ll rem = num%2;
             if(rem<=9)
             {
                 ans += (rem+48);
@@ -123,13 +123,13 @@ string convert(string s,int len)
             {
                 ans += (rem-10+65);
             }
-            num/=16;
+            num/=2;
         }
         reverse(ans.begin(),ans.end());
         return ans;
     }
 
-    else
+    else //If number is in hexadecimal form
     {
         ll x; 
         stringstream ss; 
@@ -141,9 +141,12 @@ string convert(string s,int len)
         	num = getinver(num,len*4);
         }
         string ans;
-        for(int i=0;i<len;i++)
+		string pseudoans;
+
+		//std::cout << num << std::endl;
+        for(int i=0;i<32;i++)
         {
-            ll rem = num%16;
+            ll rem = num%2;
             if(rem<=9)
             {
                 ans += (rem+48);
@@ -152,8 +155,9 @@ string convert(string s,int len)
             {
                 ans += (rem-10+65);
             }
-            num/=16;
+            num/=2;
         }
+
         reverse(ans.begin(),ans.end());
         return ans;
     }
@@ -240,6 +244,8 @@ void read_data(string filename)
     {
 
         seg temp;   temp.name = stored[i].name;    temp.position = pos + START;  
+		//print out temp
+		std::cout << temp.name << " " << temp.position << std::endl;
         datalabel.push_back(temp);
         if(stored[i].type == "byte")
         {
@@ -252,28 +258,34 @@ void read_data(string filename)
         else if(stored[i].type == "word")
         {
             for(int j = 0; j < stored[i].value.size(); j++)
-            {
+            {	
+				//std::cout << stored[i].value[j] << std::endl;
                 string s = convert(stored[i].value[j],8);
-                string temp;    temp+=s[6]; temp+=s[7];
-                datamemory[pos++] = temp; temp.clear();
-                temp+=s[4]; temp+=s[5];
-                datamemory[pos++] = temp; temp.clear();
-                temp+=s[2]; temp+=s[3];
-                datamemory[pos++] = temp; temp.clear();
-                temp+=s[0]; temp+=s[1];
-                datamemory[pos++] = temp; temp.clear();
+				//std::cout << s << std::endl;
+                //string temp;    temp+=s[6]; temp+=s[7];
+                //datamemory[pos++] = temp; temp.clear();
+                //temp+=s[4]; temp+=s[5];
+                //datamemory[pos++] = temp; temp.clear();
+                //temp+=s[2]; temp+=s[3];
+                //datamemory[pos++] = temp; temp.clear();
+                //temp+=s[0]; temp+=s[1];
+                //datamemory[pos++] = temp; temp.clear();
+				datamemory[pos] = s;
+				pos += 4;
             }
         }
         else if(stored[i].type == "halfword")
         {
              for(int j = 0; j < stored[i].value.size(); j++)
             {
-                string s = convert(stored[i].value[j],4);
-                string temp;    
-                temp+=s[2]; temp+=s[3];
-                datamemory[pos++] = temp; temp.clear();
-                temp+=s[0]; temp+=s[1];
-                datamemory[pos++] = temp; temp.clear();
+                string s = convert(stored[i].value[j],2);
+                //string temp;    
+                //temp+=s[2]; temp+=s[3];
+                //datamemory[pos++] = temp; temp.clear();
+                //temp+=s[0]; temp+=s[1];
+                //datamemory[pos++] = temp; temp.clear();
+				datamemory[pos] = s;
+				pos+= 2;
             }
         }
 
@@ -367,7 +379,7 @@ void hexa()
 	}
 
 	reverse(s.begin(),s.end());
-	file<<pccount/4<<"               : ";
+	file<<pccount/4<<"\t\t\t\t : ";
 	//file<<"0x";
 
 	//Write to binary file aswell
@@ -835,18 +847,18 @@ void IFunction(int index,int index1)
 			imme/=2;
 		}
 
-		//addition to fix srai instruction
-		if (index1 == 13) {
+		//addition to fix srai instruction (at some point have to recheck this)
+		if (index1 == 10) {
 			for (int k = 0; k<5; k++) binary[k] = (k==1);
 		}
 
 		//fixing srli instruction
-		if (index1 == 12) {
+		if (index1 == 11) {
 			for (int k = 0; k<5; k++) binary[k] = 0;
 		}
 
 		//fixing slli instruction
-		if (index1 == 8) {
+		if (index1 == 12) {
 			for (int k = 0; k<5; k++) binary[k] = 0;
 		}
 
@@ -1314,6 +1326,7 @@ void SBFunction(int index,int index1)
 		imme = getinver(imme,12);
 	}
 	i=0;
+
 	while(Format[index1][i]!=' ')
 	{
 		i++;
@@ -1528,6 +1541,7 @@ void processla(int index)
 //To process Load Word (lw) psudo command
 void processlw(string type,int index,ll pos)
 {
+	std::cout << "pos = " << pos << std::endl;
 	ll currentpc = code.size()*4 + START;
 	int i = 0;
 	while(codeinit[index][i]!='x')
@@ -1539,6 +1553,7 @@ void processlw(string type,int index,ll pos)
 	currentpc = pos - currentpc;
 	string ins;
 	ins = "auipc x" + s +" 65536";
+	std::cout << ins << std::endl;
 	code.push_back(ins);	ins.clear();
 	string labeladd;
 	ll  temp1 = abs(currentpc);
@@ -1555,6 +1570,7 @@ void processlw(string type,int index,ll pos)
 	}
 	reverse(labeladd.begin(),labeladd.end());
 	ins = type+ " x" + s + " " + labeladd + "(x" + s + ")";
+	std::cout << ins << std::endl;
 	code.push_back(ins);
 }
 
@@ -1803,7 +1819,7 @@ int main(int argc, char* argv[])
 		}
 
 	for(int i=0;i<4000;i++)
-		datamemory[i] = "00";
+		datamemory[i] = "00000000000000000000000000000000";
 	read_data(cvalue); 
 	
 	ofstream files;
@@ -1813,7 +1829,7 @@ int main(int argc, char* argv[])
 	files.open("inst_mem.mif");
 	if (!files.is_open()) return 1;
 
-	files << "WIDTH = 32;\nDEPTH = 65536;\nADDRESS_RADIX = HEX;\nDATA_RADIX = BIN;\n\nCONTENT\nBEGIN\n";
+	files << "WIDTH = 32;\nDEPTH = 65536;\nADDRESS_RADIX = UNS;\nDATA_RADIX = BIN;\n\nCONTENT\nBEGIN\n";
 	files.close();
 
 	if (mflag)
@@ -1848,22 +1864,25 @@ int main(int argc, char* argv[])
 	process();
 	myFile.close();
 	ofstream file;
+	ofstream file2;
 	file.open("inst_mem.mif",std::ios_base::app);
+	file2.open("BINARY.mc",std::ios_base::app);
 	if (!file.is_open()) return 1;
-	file << "END;";
-	
-
+	if (!file2.is_open()) return 1;
 
 	//Print the Data Memory Part in Increasing Address Order
-	//for(int i=0;i<400;i++)
-	//{
-	//	file<<datamemory[i]<<" ";
-	//	if((i+1)%4==0)
-	//	{
-	//		file<<endl;
-	//	}
-	//}
+	for(int i=0;i<400;i++)
+	{
+		file2<<datamemory[i] << '\n';
+		file << pccount/4 << "\t\t\t\t : " << datamemory[i] << ";\n";
+		if((i+1)%4==0)
+		{
+			///file2;
+		}
+	}
 	//file<<s<<endl;
+	file << "END;";
+	file2.close();
 	file.close();
 
 	return 0;
